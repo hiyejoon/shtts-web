@@ -440,6 +440,12 @@ class SHTTSEmulator {
         log("Initializing Unicorn ARM emulator...");
         const u = new uc.Unicorn(uc.ARCH_ARM, uc.MODE_ARM);
         this.u = u;
+        // ===== [추가] SWI handler =====
+        u.hook_add(uc.HOOK_INTR, function(uc, intno) {
+            console.log("SWI called:", intno);
+            const lr = uc.reg_read_i32(uc.ARM_REG_LR);
+            uc.reg_write_i32(uc.ARM_REG_PC, lr);
+        });
 
         // Map memory regions
         u.mem_map(ARM9_BASE, ARM9_SIZE, uc.PROT_ALL);
