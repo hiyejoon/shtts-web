@@ -535,9 +535,6 @@ class SHTTSEmulator {
 
         // Set LR to sentinel
         u.reg_write_i32(uc.ARM_REG_LR, SENTINEL);
-
-        // Ensure ARM mode (clear THUMB bit in CPSR)
-        let cpsr = u.reg_read_i32(uc.ARM_REG_CPSR);
         // ===== FIX: ARM/THUMB 자동 처리 =====
 
         // Thumb 여부 판단 (LSB = 1이면 Thumb)
