@@ -538,11 +538,27 @@ class SHTTSEmulator {
 
         // Ensure ARM mode (clear THUMB bit in CPSR)
         let cpsr = u.reg_read_i32(uc.ARM_REG_CPSR);
-        cpsr &= ~(1 << 5);
-        u.reg_write_i32(uc.ARM_REG_CPSR, cpsr);
+        // ===== FIX: ARM/THUMB 자동 처리 =====
 
-        // Run
-        u.emu_start(addr, SENTINEL, 0, 0);
+        // Thumb 여부 판단 (LSB = 1이면 Thumb)
+        let cpsr = u.reg_read_i32(uc.ARM_REG_CPSR);
+
+        if (addr & 1) {
+            // Thumb mode
+            cpsr |= (1 << 5);
+            u.reg_write_i32(uc.ARM_REG_CPSR, cpsr);
+
+            // PC는 하위비트 제거
+            u.reg_write_i32(uc.ARM_REG_PC, addr & ~1);
+        } else {
+            // ARM mode
+            cpsr &= ~(1 << 5);
+            u.reg_write_i32(uc.ARM_REG_CPSR, cpsr);
+
+            u.reg_write_i32(uc.ARM_REG_PC, addr);
+        }
+
+        u.emu_start(u.reg_read_i32(uc.ARM_REG_PC), SENTINEL, 0, 0)
 
         // Read return value (handle signed -> unsigned)
         return u.reg_read_i32(uc.ARM_REG_R0);
